@@ -1,17 +1,19 @@
 use std::{env, fs, io};
 
-use tiny_lang::{Lexer, Token};
+mod lexer;
+mod token;
+
+use lexer::tokenize;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    let input = fs::read(args[1].as_str())?;
-    let mut lexer = Lexer::new(input);
+    let input = fs::read_to_string(args[1].as_str())?;
+    let source = input.clone();
+    let tokens = tokenize(source);
 
-    let mut token = lexer.next_token();
-
-    while token != Token::EOF {
-        println!("{:?}", token);
-        token = lexer.next_token();
+    println!("Tokens for: {}", input);
+    for token in tokens {
+        token.debug();
     }
 
     Ok(())
