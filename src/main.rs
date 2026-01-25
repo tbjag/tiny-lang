@@ -11,7 +11,9 @@ fn main() -> io::Result<()> {
     let source = input.clone();
     let tokens = tokenize(source);
 
-    println!("Tokens for: {}", input);
+    println!("Program:\n{}", input);
+    println!("-------------------------");
+    println!("Tokens:");
     for token in tokens {
         token.debug();
     }
