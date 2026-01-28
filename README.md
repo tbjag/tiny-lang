@@ -7,6 +7,22 @@ programmer than before.
 
 Based off of the tiny language because I threw away the spec of class project.
 
+## Next Steps
+
+Refactor Lexer:
+
+- Add enums to type
+- Remove debug from tokens
+- move keywords into symbol?
+- Write tests
+
+Rest of Project:
+
+- Build parser
+- Generate instructions for WASM or FASM
+- Build out SSA, generate .dot graphs
+- Generate instructions
+
 ## Links
 
 Specifications:

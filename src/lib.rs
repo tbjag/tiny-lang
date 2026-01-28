@@ -1,5 +1,5 @@
 pub mod token;
 pub mod lexer;
 
-pub use token::{Token, TokenKind};
+pub use token::{Token};
 pub use lexer::tokenize;

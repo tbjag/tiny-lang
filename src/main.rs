@@ -14,8 +14,8 @@ fn main() -> io::Result<()> {
     println!("Program:\n{}", input);
     println!("-------------------------");
     println!("Tokens:");
-    for token in tokens {
-        token.debug();
+    for _token in tokens {
+        println!("{:?}", _token);
     }
 
     Ok(())
