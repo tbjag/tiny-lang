@@ -3,7 +3,7 @@ use crate::token::{Token};
 
 #[derive(Clone)]
 enum Handler {
-    Default(Token, String),
+    Default(Token, usize),
     Skip,
     String,
     Character,
@@ -62,8 +62,8 @@ impl Lexer {
 
     fn handle_pattern(&mut self, handler: &Handler, regex: &Regex) {
         match handler {
-            Handler::Default(token, value) => {
-                self.advance_n(value.len());
+            Handler::Default(token, l) => {
+                self.advance_n(l.clone());
                 self.push(token.clone());
             }
             Handler::Skip => {
@@ -150,30 +150,30 @@ fn create_lexer(source: impl Into<String>) -> Lexer {
         patterns: vec![
             RegexPattern {
                 regex: Regex::new(r"print").unwrap(),
-                handler: Handler::Default(Token::KeywordPrint, "print".to_string()),
+                handler: Handler::Default(Token::KeywordPrint, "print".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"putc").unwrap(),
-                handler: Handler::Default(Token::KeywordPutc, "putc".to_string()),
+                handler: Handler::Default(Token::KeywordPutc, "putc".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"while").unwrap(),
-                handler: Handler::Default(Token::KeywordWhile, "while".to_string()),
+                handler: Handler::Default(Token::KeywordWhile, "while".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"if").unwrap(),
-                handler: Handler::Default(Token::KeywordIf, "if".to_string()),
+                handler: Handler::Default(Token::KeywordIf, "if".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"else").unwrap(),
-                handler: Handler::Default(Token::KeywordElse, "else".to_string()),
+                handler: Handler::Default(Token::KeywordElse, "else".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"[_a-zA-Z][_a-zA-Z0-9]*").unwrap(),
                 handler: Handler::Identifier,
             },
             RegexPattern {
-                regex: Regex::new(r"[0-9]+").unwrap(),
+                regex: Regex::new(r"-?[0-9]+").unwrap(),
                 handler: Handler::Integer,
             },
             RegexPattern {
@@ -194,87 +194,87 @@ fn create_lexer(source: impl Into<String>) -> Lexer {
             },
             RegexPattern {
                 regex: Regex::new(r"\(").unwrap(),
-                handler: Handler::Default(Token::OpenParen, "(".to_string()),
+                handler: Handler::Default(Token::OpenParen, "(".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\)").unwrap(),
-                handler: Handler::Default(Token::CloseParen, ")".to_string()),
+                handler: Handler::Default(Token::CloseParen, ")".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\{").unwrap(),
-                handler: Handler::Default(Token::OpenBrace, "{".to_string()),
+                handler: Handler::Default(Token::OpenBrace, "{".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\}").unwrap(),
-                handler: Handler::Default(Token::CloseBrace, "}".to_string()),
+                handler: Handler::Default(Token::CloseBrace, "}".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"==").unwrap(),
-                handler: Handler::Default(Token::OpEqual, "==".to_string()),
+                handler: Handler::Default(Token::OpEqual, "==".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"!=").unwrap(),
-                handler: Handler::Default(Token::OpNotEqual, "!=".to_string()),
+                handler: Handler::Default(Token::OpNotEqual, "!=".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"=").unwrap(),
-                handler: Handler::Default(Token::OpAssign, "=".to_string()),
+                handler: Handler::Default(Token::OpAssign, "=".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"!").unwrap(),
-                handler: Handler::Default(Token::OpNot, "!".to_string()),
+                handler: Handler::Default(Token::OpNot, "!".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"<=").unwrap(),
-                handler: Handler::Default(Token::OpLessEqual, "<=".to_string()),
+                handler: Handler::Default(Token::OpLessEqual, "<=".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"<").unwrap(),
-                handler: Handler::Default(Token::OpLess, "<".to_string()),
+                handler: Handler::Default(Token::OpLess, "<".len()),
             },
             RegexPattern {
                 regex: Regex::new(r">=").unwrap(),
-                handler: Handler::Default(Token::OpGreaterEqual, ">=".to_string()),
+                handler: Handler::Default(Token::OpGreaterEqual, ">=".len()),
             },
             RegexPattern {
                 regex: Regex::new(r">").unwrap(),
-                handler: Handler::Default(Token::OpGreater, ">".to_string()),
+                handler: Handler::Default(Token::OpGreater, ">".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"&&").unwrap(),
-                handler: Handler::Default(Token::OpAnd, "&&".to_string()),
+                handler: Handler::Default(Token::OpAnd, "&&".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\|\|").unwrap(),
-                handler: Handler::Default(Token::OpOr, "||".to_string()),
+                handler: Handler::Default(Token::OpOr, "||".len()),
             },
             RegexPattern {
                 regex: Regex::new(r";").unwrap(),
-                handler: Handler::Default(Token::Semicolon, ";".to_string()),
+                handler: Handler::Default(Token::Semicolon, ";".len()),
             },
             RegexPattern {
                 regex: Regex::new(r",").unwrap(),
-                handler: Handler::Default(Token::Comma, ",".to_string()),
+                handler: Handler::Default(Token::Comma, ",".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\+").unwrap(),
-                handler: Handler::Default(Token::OpAdd, "+".to_string()),
+                handler: Handler::Default(Token::OpAdd, "+".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"-").unwrap(),
-                handler: Handler::Default(Token::OpSubtract, "-".to_string()),
+                handler: Handler::Default(Token::OpSubtract, "-".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"/").unwrap(),
-                handler: Handler::Default(Token::OpDivide, "/".to_string()),
+                handler: Handler::Default(Token::OpDivide, "/".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"\*").unwrap(),
-                handler: Handler::Default(Token::OpMultiply, "*".to_string()),
+                handler: Handler::Default(Token::OpMultiply, "*".len()),
             },
             RegexPattern {
                 regex: Regex::new(r"%").unwrap(),
-                handler: Handler::Default(Token::OpMod, "%".to_string()),
+                handler: Handler::Default(Token::OpMod, "%".len()),
             },
         ],
     }

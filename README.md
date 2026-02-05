@@ -11,10 +11,8 @@ Based off of the tiny language because I threw away the spec of class project.
 
 Refactor Lexer:
 
-- Add enums to type
-- Remove debug from tokens
 - move keywords into symbol?
-- Write tests
+- write tests
 
 Rest of Project:
 
