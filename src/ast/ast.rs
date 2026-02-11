@@ -1,41 +1,19 @@
+use crate::lexer::Token;
 
-
-trait Statement {
-    fn statement();
+#[derive(Debug, Clone)]
+pub enum Expression {
+    Number(f64),
+    String(String),
+    Symbol(String),
+    Binary {
+        left: Box<Expression>,
+        operator: Token,
+        right: Box<Expression>,
+    }
 }
 
-trait Expression {
-    fn expression();
+#[derive(Debug, Clone)]
+pub enum Statement {
+    Block {body: Vec<Statement>},
+    Expression {expression: Expression}
 }
-
-// LITERALS
-
-struct NumberExpression {
-    value: f64
-}
-
-impl NumberExpression {
-    fn expression(self) {}
-}
-
-struct StringExpression {
-    value: String
-}
-
-impl StringExpression {
-    fn expression(self) {}
-}
-
-struct SymbolExpression {
-    value: String
-}
-
-impl SymbolExpression {
-    fn expression(self) {}
-}
-
-// COMPLEX
-
-// struct BinaryExpression {
-//     left 
-// }
