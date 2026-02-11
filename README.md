@@ -9,10 +9,7 @@ Based off of the tiny language because I threw away the spec of class project.
 
 ## Next Steps
 
-Refactor Lexer:
-
-- move keywords into symbol?
-- write tests
+Restructure Project
 
 Rest of Project:
 
@@ -21,12 +18,23 @@ Rest of Project:
 - Build out SSA, generate .dot graphs
 - Generate instructions
 
-## Links
-
-Specifications:
+## References
 
 - [Lexer](https://rosettacode.org/wiki/Compiler/lexical_analyzer)
 - [Parser](https://rosettacode.org/wiki/Compiler/syntax_analyzer)
 - [Code Generator](https://rosettacode.org/wiki/Compiler/code_generator)
 - [Interpreter](https://rosettacode.org/wiki/Compiler/AST_interpreter)
 - [VM Interpreter](https://rosettacode.org/wiki/Compiler/virtual_machine_interpreter)
+
+## Running
+
+```bash
+# Build
+cargo build
+
+# Run on a test file
+cargo run -- tests/06.lang
+
+# Run tests (when added)
+cargo test
+```

@@ -1,5 +1,5 @@
 use regex::Regex;
-use crate::token::{Token};
+use super::token::Token;
 
 #[derive(Clone)]
 enum Handler {

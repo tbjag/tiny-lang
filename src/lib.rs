@@ -1,5 +1,4 @@
-pub mod token;
 pub mod lexer;
+pub mod ast;
 
-pub use token::{Token};
-pub use lexer::tokenize;
+pub use lexer::{Token, tokenize};
