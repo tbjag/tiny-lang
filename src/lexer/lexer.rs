@@ -85,7 +85,7 @@ impl Lexer {
                     let match_str = mat.as_str();
                     let char = self.char_literal_to_number(match_str);
                     let len = match_str.len() + 2;
-                    self.push(Token::Integer(char.to_string()));
+                    self.push(Token::Integer(char as i64));
                     self.advance_n(len);
                 }
             }
@@ -101,7 +101,8 @@ impl Lexer {
                 if let Some(mat) = regex.find(self.remainder()) {
                     let match_str = mat.as_str().to_string();
                     let len = match_str.len();
-                    self.push(Token::Integer(match_str));
+                    let n: i64 = match_str.parse().unwrap();
+                    self.push(Token::Integer(n));
                     self.advance_n(len);
                 }
             }

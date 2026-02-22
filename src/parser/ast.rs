@@ -2,7 +2,7 @@ use crate::lexer::Token;
 
 #[derive(Debug, Clone)]
 pub enum Expression {
-    Number(f64),
+    Number(i64),
     String(String),
     Symbol(String),
     Binary {

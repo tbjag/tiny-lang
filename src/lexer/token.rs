@@ -28,6 +28,6 @@ pub enum Token {
     Semicolon,
     Comma,
     Indentifier(String),
-    Integer(String),
+    Integer(i64),
     String (String)
 }
