@@ -1,5 +1,0 @@
-if ( p /* meaning n is prime */ ) {
-    print ( n , " " ) ;
-    count = count + 1 ; /* number of primes found so far */
-}
-if(p){print(n," ");count=count+1;}
