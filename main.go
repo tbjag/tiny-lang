@@ -5,19 +5,6 @@ import (
 	"os"
 )
 
-// type AstType string
-// const (
-// 	Sequence AstType = "Sequence"
-// 	AssignA AstType = "Assign"
-// 	IdentifierA AstType = "Identifier"
-// 	IntegerA AstType = "Integer"
-// )
-// 
-// type Ast struct {
-// 	Type AstType
-// 	Left *Ast
-// 	Right *Ast
-// }
 
 type Node struct {
 	Value int
