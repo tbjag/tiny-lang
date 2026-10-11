@@ -1,4 +1,7 @@
 # todos
 
 - write useage in readme
-- experiment how to do AST in golang
+
+- rewrite ast to main.go in its own module like lex
+- after moving adjust operators to basic program
+- write better print tree

@@ -4,72 +4,111 @@ import (
 	"fmt"
 	"slices"
 	"strconv"
+	"strings"
 )
 
+type Node struct {
+	Value string
+	Left  *Node
+	Right *Node
+}
+
+func NewNode(value string) *Node {
+	return &Node{
+		Value: value,
+		Left:  nil,
+		Right: nil,
+	}
+}
+
+func (n *Node) Insert(value string) {
+	if value <= n.Value {
+		if n.Left == nil {
+			n.Left = NewNode(value)
+		} else {
+			n.Left.Insert(value)
+		}
+	} else {
+		if n.Right == nil {
+			n.Right = NewNode(value)
+		} else {
+			n.Right.Insert(value)
+		}
+	}
+}
+
+func PrintTree(n *Node, marker string, level int) {
+	if n != nil {
+		PrintTree(n.Right, "  "+marker, level+1)
+		ident := strings.Repeat("  ", level)
+		fmt.Printf("%s%s%s\n", ident, marker, n.Value)
+		PrintTree(n.Left, "  "+marker, level+1)
+	}
+}
 
 var idx = 0
-var content = "45*5+(333/3)+10"
-var contentLen =  len(content)
+var content = "45*3*(4+2)"
+var contentLen = len(content)
 
 func isNumeric(s string) bool {
 	_, err := strconv.ParseInt(s, 10, 64)
 	return err == nil
 }
 
-func terminal() int64 { // can we convert to reg. int?
+func terminal() *Node {
 	res := ""
 	for idx < contentLen && isNumeric(string(content[idx])) {
 		res += string(content[idx]) //use string builder
 		idx += 1
 	}
 	if res != "" {
-		num, err := strconv.ParseInt(res, 10, 64)
-		if err != nil {
-			panic("failed to parse int")
-		}
-		return num
+		return NewNode(res)
 	}
 	if string(content[idx]) == "(" { //maybe we can use byte comparison here?
 		idx += 1
-		res2 := eval()
+		eval := eval()
 		if idx < contentLen && string(content[idx]) == ")" {
 			idx += 1
-			return int64(res2)
+			return eval
 		}
 	}
 	panic("failed to parse in terminal function")
 }
 
-func operation() int64 {
+func operation() *Node {
 	res := terminal()
 
-	for idx < contentLen && slices.Contains([]string{"*", "/"}, string(content[idx])) {
-		if string(content[idx]) == "*" {
-			idx += 1
-			res *= terminal()
-		} else if string(content[idx]) == "/" {
-			idx += 1
-			res /= terminal()
+	for idx < contentLen && slices.Contains([]string{"*"}, string(content[idx])) {
+		op := string(content[idx])
+		idx += 1
+		if op == "*" {
+			n := NewNode("mul")
+			n.Left = res
+			n.Right = terminal()
+			res = n
 		} else {
-			panic("failed to parse in operation")
+			panic("failed in operation")
 		}
 	}
-
 	return res
 }
 
-func eval() int64 {
+func eval() *Node {
 	res := operation()
-
 	for idx < contentLen && slices.Contains([]string{"+"}, string(content[idx])) {
+		op := string(content[idx])
 		idx += 1
-		res += operation()
+		if op == "+" {
+			n := NewNode("plus")
+			n.Left = res
+			n.Right = operation()
+			res = n
+		}
 	}
-	
 	return res
 }
 
 func main() {
 	fmt.Println("Math:   ", content)
-	fmt.Println("Result: ", eval())
+	PrintTree(eval(), "--", 0)
 }
