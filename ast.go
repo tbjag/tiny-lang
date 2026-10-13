@@ -47,7 +47,54 @@ func printTree(ast *Node, marker string, level int) {
         | ('+' | '-' | '!') primary
         ;
  */
-func (a *Ast) primary() {
-	// if a.idx < a.tokenLen && slices.Contains([])
-	// ^^ contains func here to find tokentype
+func (a *Ast) primary() *Node {
+	if a.idx >= a.tokenLen {
+		panic("idx greater than token length")
+	}
+	currentToken := a.tokens[a.idx]
+	a.idx += 1
+	if slices.Contains([]TokenType{Integer, Identifier}, currentToken.Type) {
+		return newNode(currentToken)
+	}
+	if currentToken.Type == LeftParen {
+		// call expr here
+		panic("todo")
+	}
+	// if slices.Contains([]TokenType{Integer, Identifier}, currentToken.Type) {
+	// 	return newNode(currentToken) // this is +, -, !
+	// }
+	panic(fmt.Sprintf("unexpected token in primary %s", currentToken.Type))
+}
+
+/*
+ * multiplication_expr =   primary {('*' | '/' | '%') primary } ;
+ */
+func (a *Ast) multiplicationExpression() *Node {
+	res := a.primary()
+	if a.idx >= a.tokenLen {
+		panic("idx greater than token length")
+	}
+	
+	for slices.Contains([]TokenType{Multiply, Divide, Mod}, a.tokens[a.idx].Type) {
+		op := a.tokens[a.idx]
+		a.idx += 1
+		if op.Type == Multiply {
+			n := newNode(op)
+			n.Left = res
+			n.Right = a.primary()
+		} else {
+			panic("not implemented")
+		}
+	}
+	return res
+}
+
+/*
+ * addition_expr = multiplication_expr {('+' | '-') multiplication_expr} ;
+ */
+func (a *Ast) additionExpression() *Node {
+	res := a.multiplicationExpression()
+	if a.idx >= a.tokenLen {
+		panic("idx greater than token length")
+	}
 }
