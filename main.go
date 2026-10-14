@@ -21,11 +21,16 @@ func main() {
 
 	lexRes := lex(rawData)
 	fmt.Println(lexRes)
-	// astRes := parse(lexRes)
-	// for _, item := range astRes {
-	// 	fmt.Printf("%+v\n", item)
-	// }
-
-	// fmt.Println(astRes.Type)
-	
+	rootNode := Token{
+		Type: EOF,
+		Val: "",
+	}
+	ast := Ast {
+		tokens: lexRes,
+		tokenLen: len(lexRes),
+		root: newNode(rootNode),
+		idx: 0,
+	}
+	test := ast.expression()
+	printTree(test, "---", 0)
 }

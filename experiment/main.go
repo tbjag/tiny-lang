@@ -21,22 +21,6 @@ func NewNode(value string) *Node {
 	}
 }
 
-func (n *Node) Insert(value string) {
-	if value <= n.Value {
-		if n.Left == nil {
-			n.Left = NewNode(value)
-		} else {
-			n.Left.Insert(value)
-		}
-	} else {
-		if n.Right == nil {
-			n.Right = NewNode(value)
-		} else {
-			n.Right.Insert(value)
-		}
-	}
-}
-
 func PrintTree(n *Node, marker string, level int) {
 	if n != nil {
 		PrintTree(n.Right, "  "+marker, level+1)

@@ -1,0 +1,2 @@
+/* should be able test basic primary & multiplication */
+a || b && c || d  ;
