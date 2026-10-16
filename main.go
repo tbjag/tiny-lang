@@ -21,16 +21,19 @@ func main() {
 
 	lexRes := lex(rawData)
 	fmt.Println(lexRes)
+
+	// AST logic
 	rootNode := Token{
-		Type: EOF,
-		Val: "",
+		Type: Semicolon,
+		Val:  "root",
 	}
-	ast := Ast {
-		tokens: lexRes,
+	ast := Ast{
+		tokens:   lexRes,
 		tokenLen: len(lexRes),
-		root: newNode(rootNode),
-		idx: 0,
+		root:     newNode(rootNode),
+		idx:      0,
 	}
-	test := ast.expression()
-	printTree(test, "---", 0)
+	for ast.currType() != EOF {
+		ast.root.Right = ast.stmt()
+	}
 }

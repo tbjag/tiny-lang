@@ -12,20 +12,25 @@ type Node struct {
 	Right *Node
 }
 
-type Ast struct {
-	tokens []Token
-	tokenLen int
-	root   *Node
-	idx    int
-	
-}
-
 func newNode(value Token) *Node {
 	return &Node{
 		Value: value,
 		Left:  nil,
 		Right: nil,
 	}
+}
+
+type Ast struct {
+	tokens   []Token
+	tokenLen int
+	root     *Node
+	idx      int
+}
+
+var precedenceMap = map[TokenType]int{
+	Subtract: 1,
+	Add:      2,
+	Not:      3,
 }
 
 var spacer = "  "
@@ -46,153 +51,78 @@ func (a *Ast) checkEOF() {
 	}
 }
 
-/*
-*       primary    =   Identifier
-        | Integer
-        | '(' expr ')'
-        | ('+' | '-' | '!') primary
-        ;
- */
-func (a *Ast) primary() *Node { //TODO need support primary
+func (a *Ast) currType() TokenType {
 	a.checkEOF()
-	currentToken := a.tokens[a.idx]
-	a.idx += 1
-	if slices.Contains([]TokenType{Integer, Identifier}, currentToken.Type) {
-		return newNode(currentToken)
-	}
-	if currentToken.Type == LeftParen {
-		expr := a.expression()
-	 	a.checkEOF()
-		curr := a.tokens[a.idx]
-		if curr.Type == RightParen {
-			a.idx += 1
-			return expr
+	return a.tokens[a.idx].Type
+}
+
+func (a *Ast) getToken() Token {
+	a.checkEOF()
+	return a.tokens[a.idx]
+}
+
+func (a *Ast) expr(p int) *Node {
+	var x *Node
+	if a.currType() == LeftParen {
+		x = a.parenExpr()
+	} else if slices.Contains([]TokenType{Subtract, Add, Not}, a.currType()) {
+		op := a.getToken()
+		a.idx += 1
+		y := a.expr(precedenceMap[a.currType()])
+		if op.Type == Add {
+			x = y
 		} else {
-			panic("expected right paren in terminal")
+			x = newNode(op)
+			x.Left = y
 		}
-	}
-	// if slices.Contains([]TokenType{Integer, Identifier}, currentToken.Type) {
-	// 	return newNode(currentToken) // this is +, -, !
-	// }
-	panic(fmt.Sprintf("unexpected token in primary %s", currentToken.Type))
-}
-
-/*
- * multiplication_expr =   primary {('*' | '/' | '%') primary } ;
- */
-func (a *Ast) multiplicationExpression() *Node {
-	res := a.primary()
-	a.checkEOF()
-	for slices.Contains([]TokenType{Multiply, Divide, Mod}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
+	} else if slices.Contains([]TokenType{Identifier, Integer}, a.currType()) {
+		x = newNode(a.getToken())
 		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.primary()
-		res = n
+	} else {
+		panic("failed to parse in expr")
 	}
-	return res
-}
 
-/*
- * addition_expr = multiplication_expr {('+' | '-') multiplication_expr} ;
- */
-func (a *Ast) additionExpression() *Node {
-	res := a.multiplicationExpression()
-	a.checkEOF()
-	for slices.Contains([]TokenType{Add, Subtract}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
+	for slices.Contains([]TokenType{Add, Subtract, Not}, a.currType()) && precedenceMap[a.currType()] >= p {
+		saveTok := a.getToken()
 		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.multiplicationExpression()
-		res = n
+		q := precedenceMap[a.currType()]
+		// if saveTok != waht?
+		x = newNode(saveTok)
+		x.Left = a.expr(q)
 	}
-	return res
+
+	return x
 }
 
-/*
- * relational_expr = addition_expr [('<' | '<=' | '>' | '>=') addition_expr] ;
- */
-func (a *Ast) relationalExpression() *Node {
-	res := a.additionExpression()
-	a.checkEOF()
-	for slices.Contains([]TokenType{Less, LessEqual, Greater, GreaterEqual}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
+func (a *Ast) parenExpr() *Node {
+	if a.currType() != LeftParen {
+		panic("expected leftParen")
+	}
+	x := a.expr(0)
+	if a.currType() != RightParen {
+		panic("expected RightParen")
+	}
+	return x
+}
+
+func (a *Ast) stmt() *Node {
+	var t *Node
+	if a.currType() == If {
+		panic("todo")
+	} else if a.currType() == Put {
+		panic("todo")
+	} else if a.currType() == Print {
+		panic("todo")
+	} else if a.currType() == Semicolon {
 		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.additionExpression()
-		res = n
+	} else if a.currType() == Identifier {
+		panic("todo")
+	} else if a.currType() == While {
+		panic("todo")
+	} else if a.currType() == LeftBrace {
+		panic("todo")
+	} else if a.currType() != EOF {
+		panic("reached end of stmt")
 	}
-	return res
+	return t
 }
-
-/*
- * equality_expr = relational_expr [('==' | '!=') relational_expr] ;
- */
-func (a *Ast) equalityExpression() *Node {
-	res := a.relationalExpression()
-	a.checkEOF()
-	for slices.Contains([]TokenType{Equal, NotEqual}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
-		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.relationalExpression()
-		res = n
-	}
-	return res
-}
-
-/*
- * and_expr = equality_expr {'&&' equality_expr} ;
- */
-func (a *Ast) andExpression() *Node {
-	res := a.equalityExpression()
-	a.checkEOF()
-	for slices.Contains([]TokenType{And}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
-		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.equalityExpression()
-		res = n
-	}
-	return res
-}
-
-/*
- * expr = and_expr {'||' and_expr} ;
- */
-func (a *Ast) expression() *Node {
-	res := a.andExpression()
-	a.checkEOF()
-	for slices.Contains([]TokenType{Or}, a.tokens[a.idx].Type) {
-		op := a.tokens[a.idx]
-		a.idx += 1
-		n := newNode(op)
-		n.Left = res
-		n.Right = a.andExpression()
-		res = n
-	}
-	return res
-}
-
-/*
- * prt_list = (string | expr) {',' (String | expr)} ;
- */
-// func (a *Ast) prtList() *Node {
-// 	res := a.expression()
-// 	a.checkEOF()
-// 	fmt.Println("GOT")
-// 	for slices.Contains([]TokenType{Comma}, a.tokens[a.idx].Type) {
-// 		op := a.tokens[a.idx]
-// 		a.idx += 1
-// 		n := newNode(op)
-// 		n.Left = res
-// 		n.Right = a.expression()
-// 		res = n
-// 	}
-// 	return res
-// }
