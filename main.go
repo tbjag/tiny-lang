@@ -33,7 +33,15 @@ func main() {
 		root:     newNode(rootNode),
 		idx:      0,
 	}
-	for ast.currType() != EOF {
-		ast.root.Right = ast.stmt()
+	for ast.tokens[ast.idx].Type != EOF {
+		t := Token{
+			Type: Semicolon,
+			Val: "",
+		}
+		n := newNode(t)
+		n.Left = ast.root
+		n.Right = ast.stmt()
+		ast.root = n
 	}
+	printTree(ast.root, "---", 0)
 }

@@ -47,7 +47,7 @@ func printTree(ast *Node, marker string, level int) {
 
 func (a *Ast) checkEOF() {
 	if a.tokens[a.idx].Type == EOF {
-		panic("idx greater than token length")
+		panic("reached EOF")
 	}
 }
 
@@ -59,6 +59,13 @@ func (a *Ast) currType() TokenType {
 func (a *Ast) getToken() Token {
 	a.checkEOF()
 	return a.tokens[a.idx]
+}
+
+func (a *Ast) expect(t TokenType) {
+	if a.currType() != t {
+		panic(fmt.Sprintf("Expected %s but got %s", t, a.currType()))
+	}
+	a.idx += 1
 }
 
 func (a *Ast) expr(p int) *Node {
@@ -90,35 +97,80 @@ func (a *Ast) expr(p int) *Node {
 		x = newNode(saveTok)
 		x.Left = a.expr(q)
 	}
-
 	return x
 }
 
 func (a *Ast) parenExpr() *Node {
-	if a.currType() != LeftParen {
-		panic("expected leftParen")
-	}
+	a.expect(LeftParen)
 	x := a.expr(0)
-	if a.currType() != RightParen {
-		panic("expected RightParen")
-	}
+	a.expect(RightParen)
 	return x
 }
 
 func (a *Ast) stmt() *Node {
 	var t *Node
 	if a.currType() == If {
-		panic("todo")
+		curr := a.getToken()
+		e := a.parenExpr()
+        s := a.stmt()
+        internal := newNode(curr)
+        a.idx += 1
+        internal.Left = s
+        if a.currType() == Else {
+        	t.Right = a.stmt()
+        }
+        t = newNode(curr)
+        t.Left = e
+        t.Right = internal
 	} else if a.currType() == Put {
-		panic("todo")
+        t = newNode(a.getToken())
+        a.idx += 1
+        t.Left = a.parenExpr()
+        a.expect(Semicolon)
 	} else if a.currType() == Print {
-		panic("todo")
+		printToken := a.getToken()
+		a.idx += 1
+		a.expect(LeftParen)
+		for {
+			var e *Node
+			if a.currType() == String {
+				p := newNode(a.getToken())
+				e = newNode(printToken)
+				e.Left = p
+				a.idx += 1
+			} else {
+				e = a.expr(0)
+			}
+			seq := Token{
+				Type: Semicolon,
+				Val: "",
+			}
+			t = newNode(seq) //??
+			t.Left = t //??
+			t.Right = e
+			if a.currType() != Comma {
+				break
+			}
+		}
+		a.expect(RightParen)
+		a.expect(Semicolon)
 	} else if a.currType() == Semicolon {
 		a.idx += 1
 	} else if a.currType() == Identifier {
-		panic("todo")
+		v := newNode(a.getToken())
+		a.idx += 1
+		op := a.getToken()
+		a.expect(Assign)
+		t = newNode(op)
+		t.Left = v
+		t.Right = a.expr(0)
+		a.expect(Semicolon)
 	} else if a.currType() == While {
-		panic("todo")
+		t = newNode(a.getToken())
+		a.idx += 1
+		e := a.parenExpr()
+		t.Left = e
+		t.Right = a.stmt()
 	} else if a.currType() == LeftBrace {
 		panic("todo")
 	} else if a.currType() != EOF {
