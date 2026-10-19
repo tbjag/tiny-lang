@@ -24,7 +24,7 @@ func main() {
 
 	// AST logic
 	rootNode := Token{
-		Type: Semicolon,
+		Type: Sequence,
 		Val:  "root",
 	}
 	ast := Ast{
@@ -35,13 +35,13 @@ func main() {
 	}
 	for ast.tokens[ast.idx].Type != EOF {
 		t := Token{
-			Type: Semicolon,
-			Val: "",
+			Type: Sequence,
+			Val:  "",
 		}
 		n := newNode(t)
 		n.Left = ast.root
 		n.Right = ast.stmt()
 		ast.root = n
 	}
-	printTree(ast.root, "---", 0)
+	printTree(ast.root)
 }

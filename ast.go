@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"maps"
 	"slices"
-	"strings"
 )
 
 type Node struct {
@@ -28,21 +28,32 @@ type Ast struct {
 }
 
 var precedenceMap = map[TokenType]int{
-	Subtract: 1,
-	Add:      2,
-	Not:      3,
+	Or:    1,
+	And:   2,
+	Equal: 3, NotEqual: 3,
+	Less: 4, LessEqual: 4, Greater: 4, GreaterEqual: 4,
+	Add: 5, Subtract: 5,
+	Multiply: 6, Divide: 6, Mod: 6,
 }
+
+var precendenceKeys = slices.Collect(maps.Keys(precedenceMap))
 
 var spacer = "  "
 
-func printTree(ast *Node, marker string, level int) {
-	if ast == nil {
+func printTree(n *Node) {
+	if n == nil {
+		fmt.Println(";")
 		return
 	}
-	printTree(ast.Right, spacer+marker, level+1)
-	ident := strings.Repeat(spacer, level)
-	fmt.Printf("%s%s%s\n", ident, marker, ast.Value)
-	printTree(ast.Left, spacer+marker, level+1)
+
+	if slices.Contains([]TokenType{Identifier, Integer, String}, n.Value.Type) {
+		fmt.Println(n.Value.Type, n.Value.Val)
+		return
+	}
+	fmt.Println(n.Value.Type)
+	printTree(n.Left)
+	printTree(n.Right)
+
 }
 
 func (a *Ast) checkEOF() {
@@ -86,16 +97,20 @@ func (a *Ast) expr(p int) *Node {
 		x = newNode(a.getToken())
 		a.idx += 1
 	} else {
+		fmt.Println(a.tokens[a.idx - 1], a.currType(), a.tokens[a.idx + 1])
 		panic("failed to parse in expr")
 	}
 
-	for slices.Contains([]TokenType{Add, Subtract, Not}, a.currType()) && precedenceMap[a.currType()] >= p {
+	for slices.Contains(precendenceKeys, a.currType()) && precedenceMap[a.currType()] >= p {
 		saveTok := a.getToken()
 		a.idx += 1
 		q := precedenceMap[a.currType()]
-		// if saveTok != waht?
+		q += 1
+
+		prev := x
 		x = newNode(saveTok)
-		x.Left = a.expr(q)
+		x.Left = prev
+		x.Right = a.expr(q)
 	}
 	return x
 }
@@ -110,23 +125,25 @@ func (a *Ast) parenExpr() *Node {
 func (a *Ast) stmt() *Node {
 	var t *Node
 	if a.currType() == If {
-		curr := a.getToken()
+		t = newNode(a.getToken())
+		a.idx += 1
 		e := a.parenExpr()
-        s := a.stmt()
-        internal := newNode(curr)
-        a.idx += 1
-        internal.Left = s
-        if a.currType() == Else {
-        	t.Right = a.stmt()
-        }
-        t = newNode(curr)
-        t.Left = e
-        t.Right = internal
+		println(a.currType())
+		s := a.stmt()
+		t.Left = e
+		ifTok  := Token{
+			Val: "",
+			Type: If,
+		}
+		ifNode := newNode(ifTok)
+		ifNode.Left = s
+		t.Right = ifNode
+		// todo else statement
 	} else if a.currType() == Put {
-        t = newNode(a.getToken())
-        a.idx += 1
-        t.Left = a.parenExpr()
-        a.expect(Semicolon)
+		t = newNode(a.getToken())
+		a.idx += 1
+		t.Left = a.parenExpr()
+		a.expect(Semicolon)
 	} else if a.currType() == Print {
 		printToken := a.getToken()
 		a.idx += 1
@@ -142,11 +159,11 @@ func (a *Ast) stmt() *Node {
 				e = a.expr(0)
 			}
 			seq := Token{
-				Type: Semicolon,
-				Val: "",
+				Type: Sequence,
+				Val:  "",
 			}
-			t = newNode(seq) //??
-			t.Left = t //??
+			t = newNode(seq)
+			t.Left = t
 			t.Right = e
 			if a.currType() != Comma {
 				break
@@ -172,7 +189,19 @@ func (a *Ast) stmt() *Node {
 		t.Left = e
 		t.Right = a.stmt()
 	} else if a.currType() == LeftBrace {
-		panic("todo")
+		a.idx += 1
+		for a.currType() != RightBrace {
+			a.checkEOF()
+			s := Token{
+				Val: "",
+				Type: Sequence,
+			}
+			prev := t
+			t = newNode(s)
+			t.Left = prev
+			t.Right = a.stmt()
+		}
+		a.expect(RightBrace)
 	} else if a.currType() != EOF {
 		panic("reached end of stmt")
 	}

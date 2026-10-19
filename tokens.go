@@ -44,6 +44,8 @@ const (
 	RightBrace TokenType = "RightBrace"
 	Comma      TokenType = "Comma"
 	Semicolon  TokenType = "Semicolon"
+
+	Sequence TokenType = "Sequence"
 )
 
 type Token struct {
