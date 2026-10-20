@@ -130,14 +130,14 @@ func (a *Ast) stmt() *Node {
 		e := a.parenExpr()
 		s := a.stmt()
 		t.Left = e
-		ifTok  := Token{
-			Val: "",
-			Type: If,
-		}
-		ifNode := newNode(ifTok)
+		ifNode := newNode(Token{Type: If})
 		ifNode.Left = s
-		t.Right = ifNode
-		// todo else statement
+		if a.currType() == Else {
+			a.idx += 1
+			ifNode.Right = a.stmt()
+		}
+		
+		t.Right = ifNode	
 	} else if a.currType() == Put {
 		t = newNode(Token{Type: Prtc})
 		a.idx += 1
