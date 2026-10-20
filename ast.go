@@ -128,7 +128,6 @@ func (a *Ast) stmt() *Node {
 		t = newNode(a.getToken())
 		a.idx += 1
 		e := a.parenExpr()
-		println(a.currType())
 		s := a.stmt()
 		t.Left = e
 		ifTok  := Token{
@@ -156,18 +155,18 @@ func (a *Ast) stmt() *Node {
 				e.Left = p
 				a.idx += 1
 			} else {
-				e = a.expr(0)
+				e = newNode(Token{Type: Print})
+				e.Left = a.expr(0)
 			}
-			seq := Token{
-				Type: Sequence,
-				Val:  "",
-			}
-			t = newNode(seq)
-			t.Left = t
-			t.Right = e
+
+			n := newNode(Token{Type: Sequence})
+			n.Left = t
+			n.Right = e
+			t = n
 			if a.currType() != Comma {
 				break
 			}
+			a.idx += 1
 		}
 		a.expect(RightParen)
 		a.expect(Semicolon)

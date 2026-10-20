@@ -20,28 +20,24 @@ func main() {
 	fmt.Println("Content: \n", rawData)
 
 	lexRes := lex(rawData)
-	fmt.Println(lexRes)
+	// fmt.Println(lexRes)
 
 	// AST logic
-	rootNode := Token{
-		Type: Sequence,
-		Val:  "root",
-	}
+
 	ast := Ast{
 		tokens:   lexRes,
 		tokenLen: len(lexRes),
-		root:     newNode(rootNode),
+		root:     nil,
 		idx:      0,
 	}
+
 	for ast.tokens[ast.idx].Type != EOF {
-		t := Token{
-			Type: Sequence,
-			Val:  "",
-		}
-		n := newNode(t)
+		stmt := ast.stmt()
+		n := newNode(Token{Type: Sequence})
 		n.Left = ast.root
-		n.Right = ast.stmt()
+		n.Right = stmt
 		ast.root = n
 	}
+	fmt.Println("le start of tree")
 	printTree(ast.root)
 }

@@ -1,7 +1,8 @@
 # todos
 
 - write useage in readme
-
-- rewrite ast to main.go in its own module like lex
-- after moving adjust operators to basic program
 - write better print tree
+- add the prti and prts for print
+- cleanup/refactor code for accepts and variable names (dry out functions)
+- slight differences in tree on certain statements (debug)
+- write test suite for ast
