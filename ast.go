@@ -34,6 +34,7 @@ var precedenceMap = map[TokenType]int{
 	Less: 4, LessEqual: 4, Greater: 4, GreaterEqual: 4,
 	Add: 5, Subtract: 5,
 	Multiply: 6, Divide: 6, Mod: 6,
+	Identifier: 7, Integer: 7,
 }
 
 var precendenceKeys = slices.Collect(maps.Keys(precedenceMap))
@@ -104,8 +105,7 @@ func (a *Ast) expr(p int) *Node {
 	for slices.Contains(precendenceKeys, a.currType()) && precedenceMap[a.currType()] >= p {
 		saveTok := a.getToken()
 		a.idx += 1
-		q := precedenceMap[a.currType()]
-		q += 1
+		q := precedenceMap[saveTok.Type] + 1
 
 		prev := x
 		x = newNode(saveTok)
