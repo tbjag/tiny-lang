@@ -139,23 +139,22 @@ func (a *Ast) stmt() *Node {
 		t.Right = ifNode
 		// todo else statement
 	} else if a.currType() == Put {
-		t = newNode(a.getToken())
+		t = newNode(Token{Type: Prtc})
 		a.idx += 1
 		t.Left = a.parenExpr()
 		a.expect(Semicolon)
 	} else if a.currType() == Print {
-		printToken := a.getToken()
 		a.idx += 1
 		a.expect(LeftParen)
 		for {
 			var e *Node
 			if a.currType() == String {
 				p := newNode(a.getToken())
-				e = newNode(printToken)
+				e = newNode(Token{Type: Prts})
 				e.Left = p
 				a.idx += 1
 			} else {
-				e = newNode(Token{Type: Print})
+				e = newNode(Token{Type: Prti})
 				e.Left = a.expr(0)
 			}
 

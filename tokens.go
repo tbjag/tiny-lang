@@ -45,7 +45,11 @@ const (
 	Comma      TokenType = "Comma"
 	Semicolon  TokenType = "Semicolon"
 
+	// AST Only
 	Sequence TokenType = "Sequence"
+	Prts TokenType = "Prts"
+	Prti TokenType = "Prti"
+	Prtc TokenType = "Prtc"
 )
 
 type Token struct {

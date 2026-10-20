@@ -8,6 +8,9 @@ References:
 - https://rosettacode.org/wiki/Compiler/code_generator
 
 
+I re-used the same tokens for the lexer as well as the ast since there was not much a difference with them.
+
+
 At some point I want to implement SSA which isn't described in the original spec.
 
 # temp todos
