@@ -1,1 +1,2 @@
-   a=11;
+a=11;
+print("xdadsa", a);

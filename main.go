@@ -33,7 +33,7 @@ func main() {
 
 	for ast.tokens[ast.idx].Type != EOF {
 		stmt := ast.stmt()
-		n := newNode(Token{Type: Sequence})
+		n := newNodeTyp(Sequence)
 		n.Left = ast.root
 		n.Right = stmt
 		ast.root = n

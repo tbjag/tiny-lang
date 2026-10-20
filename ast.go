@@ -12,9 +12,17 @@ type Node struct {
 	Right *Node
 }
 
-func newNode(value Token) *Node {
+func newNodeTok(t Token) *Node {
 	return &Node{
-		Value: value,
+		Value: t,
+		Left:  nil,
+		Right: nil,
+	}
+}
+
+func newNodeTyp(t TokenType) *Node {
+	return &Node{
+		Value: Token{Type: t},
 		Left:  nil,
 		Right: nil,
 	}
@@ -80,35 +88,57 @@ func (a *Ast) expect(t TokenType) {
 	a.idx += 1
 }
 
+func (a *Ast) accept(t TokenType) bool {
+	if a.currType() == t {
+		a.idx += 1
+		return  true
+	}
+	return false
+}
+
+func (a *Ast) acceptReturn(t []TokenType) (bool, *Token) {
+	if slices.Contains(t, a.currType()) {
+		a.idx += 1
+		return true, &(a.tokens[a.idx - 1])
+	}
+	return false, nil
+}
+
+
+func (a *Ast) isBinary(p int) bool {
+	prec, ok := precedenceMap[a.tokens[a.idx].Type]
+	return ok && prec >= p
+}
+
+var ExprOperands = []TokenType{Subtract, Add, Not}
+var AssignOperands = []TokenType{Identifier, Integer}
+
 func (a *Ast) expr(p int) *Node {
 	var x *Node
 	if a.currType() == LeftParen {
 		x = a.parenExpr()
-	} else if slices.Contains([]TokenType{Subtract, Add, Not}, a.currType()) {
-		op := a.getToken()
-		a.idx += 1
+	} else if acc, op := a.acceptReturn(ExprOperands); acc {
 		y := a.expr(precedenceMap[a.currType()])
 		if op.Type == Add {
 			x = y
 		} else {
-			x = newNode(op)
+			x = newNodeTok(*op)
 			x.Left = y
 		}
-	} else if slices.Contains([]TokenType{Identifier, Integer}, a.currType()) {
-		x = newNode(a.getToken())
-		a.idx += 1
+	} else if acc, op := a.acceptReturn(AssignOperands); acc  {
+		x = newNodeTok(*op)
 	} else {
-		fmt.Println(a.tokens[a.idx - 1], a.currType(), a.tokens[a.idx + 1])
+		fmt.Println(a.tokens[a.idx - 1], a.currType(), a.tokens[a.idx + 1]) // todo better print formatting for failed parse
 		panic("failed to parse in expr")
 	}
 
-	for slices.Contains(precendenceKeys, a.currType()) && precedenceMap[a.currType()] >= p {
+	for a.isBinary(p){
 		saveTok := a.getToken()
 		a.idx += 1
 		q := precedenceMap[saveTok.Type] + 1
 
 		prev := x
-		x = newNode(saveTok)
+		x = newNodeTok(saveTok)
 		x.Left = prev
 		x.Right = a.expr(q)
 	}
@@ -124,41 +154,35 @@ func (a *Ast) parenExpr() *Node {
 
 func (a *Ast) stmt() *Node {
 	var t *Node
-	if a.currType() == If {
-		t = newNode(a.getToken())
-		a.idx += 1
+	if acc := a.accept(If); acc {
+		t = newNodeTyp(If)
 		e := a.parenExpr()
 		s := a.stmt()
 		t.Left = e
-		ifNode := newNode(Token{Type: If})
-		ifNode.Left = s
+		i := newNodeTyp(If)
+		i.Left = s
 		if a.currType() == Else {
 			a.idx += 1
-			ifNode.Right = a.stmt()
+			i.Right = a.stmt()
 		}
-		
-		t.Right = ifNode	
-	} else if a.currType() == Put {
-		t = newNode(Token{Type: Prtc})
-		a.idx += 1
+		t.Right = i	
+	} else if acc := a.accept(Put); acc {
+		t = newNodeTyp(Prtc)
 		t.Left = a.parenExpr()
 		a.expect(Semicolon)
-	} else if a.currType() == Print {
-		a.idx += 1
+	} else if acc := a.accept(Print); acc {
 		a.expect(LeftParen)
 		for {
 			var e *Node
-			if a.currType() == String {
-				p := newNode(a.getToken())
-				e = newNode(Token{Type: Prts})
+			if acc, op := a.acceptReturn([]TokenType{String}); acc  {
+				p := newNodeTok(*op)
+				e = newNodeTyp(Prts)
 				e.Left = p
-				a.idx += 1
 			} else {
-				e = newNode(Token{Type: Prti})
+				e = newNodeTyp(Prti)
 				e.Left = a.expr(0)
 			}
-
-			n := newNode(Token{Type: Sequence})
+			n := newNodeTyp(Sequence)
 			n.Left = t
 			n.Right = e
 			t = n
@@ -169,33 +193,26 @@ func (a *Ast) stmt() *Node {
 		}
 		a.expect(RightParen)
 		a.expect(Semicolon)
-	} else if a.currType() == Semicolon {
-		a.idx += 1
+	} else if acc := a.accept(Semicolon); acc {
+		// expecting semicolon here
 	} else if a.currType() == Identifier {
-		v := newNode(a.getToken())
+		v := newNodeTok(a.getToken())
 		a.idx += 1
-		op := a.getToken()
+		t = newNodeTok(a.getToken())
 		a.expect(Assign)
-		t = newNode(op)
 		t.Left = v
 		t.Right = a.expr(0)
 		a.expect(Semicolon)
-	} else if a.currType() == While {
-		t = newNode(a.getToken())
-		a.idx += 1
+	} else if acc := a.accept(While); acc {
+		t = newNodeTyp(While)
 		e := a.parenExpr()
 		t.Left = e
 		t.Right = a.stmt()
-	} else if a.currType() == LeftBrace {
-		a.idx += 1
+	} else if acc := a.accept(LeftBrace); acc {
 		for a.currType() != RightBrace {
 			a.checkEOF()
-			s := Token{
-				Val: "",
-				Type: Sequence,
-			}
 			prev := t
-			t = newNode(s)
+			t = newNodeTyp(Sequence)
 			t.Left = prev
 			t.Right = a.stmt()
 		}
