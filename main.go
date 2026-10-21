@@ -22,22 +22,8 @@ func main() {
 	lexRes := lex(rawData)
 	// fmt.Println(lexRes)
 
-	// AST logic
-
-	ast := Ast{
-		tokens:   lexRes,
-		tokenLen: len(lexRes),
-		root:     nil,
-		idx:      0,
-	}
-
-	for ast.tokens[ast.idx].Type != EOF {
-		stmt := ast.stmt()
-		n := newNodeTyp(Sequence)
-		n.Left = ast.root
-		n.Right = stmt
-		ast.root = n
-	}
+	ast := createAst(lexRes)
 	fmt.Println("le start of tree")
-	printTree(ast.root)
+	printTreePreOrder(ast)
+	fmt.Println(printTreeNested(ast))
 }

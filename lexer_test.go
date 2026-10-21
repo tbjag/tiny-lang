@@ -1,14 +1,8 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
-
-func readFile(filename string) string {
-	fileContent, _ := os.ReadFile(filename)
-	return string(fileContent)
-}
 
 func TestBasicFiles(t *testing.T) {
 	tests := []struct {

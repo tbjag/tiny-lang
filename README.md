@@ -13,8 +13,4 @@ I re-used the same tokens for the lexer as well as the ast since there was not m
 
 At some point I want to implement SSA which isn't described in the original spec.
 
-# temp todos
-
-- write better print tree (tree view, side tree view)
-- cleanup/refactor code for accepts and variable names (dry out functions)
-- write test suite for ast
+## temp todos

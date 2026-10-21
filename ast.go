@@ -35,6 +35,25 @@ type Ast struct {
 	idx      int
 }
 
+func createAst(t []Token) *Node {
+	ast := Ast{
+		tokens:   t,
+		tokenLen: len(t),
+		root:     nil,
+		idx:      0,
+	}
+
+	for ast.tokens[ast.idx].Type != EOF {
+		stmt := ast.stmt()
+		n := newNodeTyp(Sequence)
+		n.Left = ast.root
+		n.Right = stmt
+		ast.root = n
+	}
+
+	return ast.root
+}
+
 var precedenceMap = map[TokenType]int{
 	Or:    1,
 	And:   2,
@@ -47,22 +66,33 @@ var precedenceMap = map[TokenType]int{
 
 var precendenceKeys = slices.Collect(maps.Keys(precedenceMap))
 
-var spacer = "  "
-
-func printTree(n *Node) {
+func printTreePreOrder(n *Node) {
 	if n == nil {
 		fmt.Println(";")
 		return
 	}
-
 	if slices.Contains([]TokenType{Identifier, Integer, String}, n.Value.Type) {
 		fmt.Println(n.Value.Type, n.Value.Val)
 		return
 	}
 	fmt.Println(n.Value.Type)
-	printTree(n.Left)
-	printTree(n.Right)
+	printTreePreOrder(n.Left)
+	printTreePreOrder(n.Right)
+}
 
+func printTreeNested(n *Node) string {
+	if n == nil {
+		return "nil"
+	}
+	switch n.Value.Type {
+	case Identifier, Integer, String:
+		return n.Value.Val
+	}
+	name := string(n.Value.Type)
+	if n.Left == nil && n.Right == nil {
+		return name
+	}
+	return fmt.Sprintf("%s(%s, %s)", name, printTreeNested(n.Left), printTreeNested(n.Right))
 }
 
 func (a *Ast) checkEOF() {
