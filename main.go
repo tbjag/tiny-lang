@@ -17,13 +17,11 @@ func main() {
 	}
 	rawData := string(fileContent)
 
-	fmt.Println("Content: \n", rawData)
+	fmt.Println("Content:\n", rawData, "\n")
 
 	lexRes := lex(rawData)
 	// fmt.Println(lexRes)
 
 	ast := createAst(lexRes)
-	fmt.Println("le start of tree")
-	printTreePreOrder(ast)
-	fmt.Println(printTreeNested(ast))
+	emit(ast)
 }
