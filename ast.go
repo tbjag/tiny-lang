@@ -121,7 +121,7 @@ func (a *Ast) expect(t TokenType) {
 func (a *Ast) accept(t TokenType) bool {
 	if a.currType() == t {
 		a.idx += 1
-		return  true
+		return true
 	}
 	return false
 }
@@ -129,11 +129,10 @@ func (a *Ast) accept(t TokenType) bool {
 func (a *Ast) acceptReturn(t []TokenType) (bool, *Token) {
 	if slices.Contains(t, a.currType()) {
 		a.idx += 1
-		return true, &(a.tokens[a.idx - 1])
+		return true, &(a.tokens[a.idx-1])
 	}
 	return false, nil
 }
-
 
 func (a *Ast) isBinary(p int) bool {
 	prec, ok := precedenceMap[a.tokens[a.idx].Type]
@@ -155,14 +154,14 @@ func (a *Ast) expr(p int) *Node {
 			x = newNodeTok(*op)
 			x.Left = y
 		}
-	} else if acc, op := a.acceptReturn(AssignOperands); acc  {
+	} else if acc, op := a.acceptReturn(AssignOperands); acc {
 		x = newNodeTok(*op)
 	} else {
-		fmt.Println(a.tokens[a.idx - 1], a.currType(), a.tokens[a.idx + 1]) // todo better print formatting for failed parse
+		fmt.Println(a.tokens[a.idx-1], a.currType(), a.tokens[a.idx+1]) // todo better print formatting for failed parse
 		panic("failed to parse in expr")
 	}
 
-	for a.isBinary(p){
+	for a.isBinary(p) {
 		saveTok := a.getToken()
 		a.idx += 1
 		q := precedenceMap[saveTok.Type] + 1
@@ -195,7 +194,7 @@ func (a *Ast) stmt() *Node {
 			a.idx += 1
 			i.Right = a.stmt()
 		}
-		t.Right = i	
+		t.Right = i
 	} else if acc := a.accept(Put); acc {
 		t = newNodeTyp(Prtc)
 		t.Left = a.parenExpr()
@@ -204,7 +203,7 @@ func (a *Ast) stmt() *Node {
 		a.expect(LeftParen)
 		for {
 			var e *Node
-			if acc, op := a.acceptReturn([]TokenType{String}); acc  {
+			if acc, op := a.acceptReturn([]TokenType{String}); acc {
 				p := newNodeTok(*op)
 				e = newNodeTyp(Prts)
 				e.Left = p

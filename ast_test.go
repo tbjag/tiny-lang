@@ -24,4 +24,3 @@ func TestAst(t *testing.T) {
 		})
 	}
 }
-
