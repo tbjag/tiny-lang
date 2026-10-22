@@ -23,5 +23,6 @@ func main() {
 	// fmt.Println(lexRes)
 
 	ast := createAst(lexRes)
-	emit(ast)
+	printTreePreOrder(ast)
+	gen(ast)
 }
