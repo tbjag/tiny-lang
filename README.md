@@ -14,3 +14,7 @@ I re-used the same tokens for the lexer as well as the ast since there was not m
 At some point I want to implement SSA which isn't described in the original spec.
 
 ## temp todos
+- finish assign error handling during code gen
+- rewrite emit output to match rosetta code version
+- write tests agains all rosetta code
+- onto code generation!

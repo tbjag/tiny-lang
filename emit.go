@@ -28,6 +28,18 @@ type Generator struct {
 	instructions []string
 }
 
+type JAddress string
+const (
+	JMP = "jmp"
+	JZ = "jz"
+)
+
+type Hole struct {
+	jAddress JAddress
+	idx int
+	address int
+}
+
 func gen(n *Node) {
 	g := Generator{
 		stck:         0,
@@ -44,6 +56,21 @@ func gen(n *Node) {
 	fmt.Printf("%3d halt\n", g.stck)
 }
 
+func (g *Generator)patch(h Hole) {
+	g.instructions[h.idx] = fmt.Sprintf("%3d %s (%d) %d", h.address, h.jAddress, g.stck-h.address-1, g.stck)
+}
+
+func (g *Generator)hole(j JAddress) Hole {
+	h := Hole{
+		jAddress: j,
+		idx: len(g.instructions),
+		address: g.stck,
+	}
+	g.instructions = append(g.instructions, "INSTR HOLE UNREACHABLE")
+	g.stck += 5
+	return h
+}
+
 func (g *Generator) generate(n *Node) {
 	if n == nil {
 		return
@@ -57,7 +84,7 @@ func (g *Generator) generate(n *Node) {
 	case String, Integer:
 		constant := string(n.Value.Val)
 		g.constants[constant] = len(g.constants)
-		i := fmt.Sprintf("%3d push %s - assigning in map %d", g.stck, constant, len(g.constants)-1)
+		i := fmt.Sprintf("%3d push %d", g.stck, len(g.constants)-1)
 		g.instructions = append(g.instructions, i)
 		g.stck += 5
 	case Assign:
@@ -87,26 +114,21 @@ func (g *Generator) generate(n *Node) {
 		g.stck += 1
 	case If:
 		g.generate(n.Left)
-		jzAddress := g.stck
-		jzIdx := len(g.instructions)
-		g.instructions = append(g.instructions, "JZ IF UNREACHABLE")
-		g.stck += 5
-		// if n.Right.Value
-		g.generate(n.Right)
-		
-		bpatch := fmt.Sprintf("%3d jz (%d) %d", jzAddress, g.stck-jzAddress-1, g.stck)
-		g.instructions[jzIdx] = bpatch
+		jzHole := g.hole(JZ)
+		g.generate(n.Right.Left) // then
+
+		if n.Right.Right != nil { // else
+			jmpHole := g.hole(JMP)
+			g.patch(jzHole)
+			g.generate(n.Right.Right)
+			g.patch(jmpHole)
+		} else {
+			g.patch(jzHole)
+		}
 	case While:
-		topAddress := g.stck
 		g.generate(n.Left)
-		jzAddress := g.stck
-		jzIdx := len(g.instructions)
-		g.instructions = append(g.instructions, "JZ WHILE UNREACHABLE")
-		g.stck += 5
+		jzHole := g.hole(JZ)
 		g.generate(n.Right)
-		g.instructions = append(g.instructions, fmt.Sprintf("%3d jmp (%d) %d", g.stck, topAddress-g.stck-1, topAddress))
-		g.stck += 5
-		bpatch := fmt.Sprintf("%3d jz (%d) %d", jzAddress, g.stck-jzAddress-1, g.stck)
-		g.instructions[jzIdx] = bpatch
+		g.patch(jzHole)
 	}
 }

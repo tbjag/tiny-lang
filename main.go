@@ -21,6 +21,7 @@ func main() {
 
 	lexRes := lex(rawData)
 	ast := createAst(lexRes)
-	printTreePreOrder(ast)
+	// printTreePreOrder(ast)
+	fmt.Println(printTreeNested(ast))
 	gen(ast)
 }
