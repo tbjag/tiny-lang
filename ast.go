@@ -190,8 +190,7 @@ func (a *Ast) stmt() *Node {
 		t.Left = e
 		i := newNodeTyp(If)
 		i.Left = s
-		if a.currType() == Else {
-			a.idx += 1
+		if a.accept(Else){
 			i.Right = a.stmt()
 		}
 		t.Right = i
