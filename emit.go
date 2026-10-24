@@ -25,7 +25,8 @@ type Generator struct {
 	stck         int
 	variables    map[string]int
 	constants    int
-	literals     []string
+	literals     map[string]int
+	strs         []string
 	instructions []string
 }
 
@@ -47,13 +48,13 @@ func gen(n *Node) string {
 		stck:         0,
 		variables:    make(map[string]int),
 		constants:    0,
-		literals:     make([]string, 0),
+		literals:     make(map[string]int),
 		instructions: make([]string, 0),
 	}
 	g.generate(n)
 	var sb strings.Builder
-	fmt.Fprintf(&sb, "Datasize: %d Strings: %d\n", len(g.variables), len(g.literals))
-	for _, l := range g.literals {
+	fmt.Fprintf(&sb, "Datasize: %d Strings: %d\n", len(g.variables), len(g.strs))
+	for _, l := range g.strs {
 		sb.WriteString(l + "\n")
 	}
 	for _, instruction := range g.instructions {
@@ -93,8 +94,13 @@ func (g *Generator) generate(n *Node) {
 		g.instructions = append(g.instructions, i)
 		g.stck += 5
 	case String:
-		g.literals = append(g.literals, n.Value.Val)
-		i := fmt.Sprintf("%5d push %2d", g.stck, len(g.literals)-1)
+		idx, ok := g.literals[n.Value.Val]
+		if !ok {
+			idx = len(g.strs)
+			g.literals[n.Value.Val] = idx
+			g.strs = append(g.strs, n.Value.Val)
+		}
+		i := fmt.Sprintf("%5d push %2d", g.stck, idx)
 		g.instructions = append(g.instructions, i)
 		g.stck += 5
 	case Integer:
@@ -103,10 +109,11 @@ func (g *Generator) generate(n *Node) {
 		i := fmt.Sprintf("%5d push  %s", g.stck, constant)
 		g.instructions = append(g.instructions, i)
 		g.stck += 5
+	case Character:
+		i := fmt.Sprintf("%5d push  %d", g.stck, charCode(n.Value.Val))
+		g.instructions = append(g.instructions, i)
+		g.stck += 5
 	case Assign:
-		// if variable already present then refer to old var,
-		// if it isnt present create new var
-
 		v, ok := g.variables[n.Left.Value.Val]
 		if !ok {
 			v = len(g.variables)
@@ -120,10 +127,13 @@ func (g *Generator) generate(n *Node) {
 		g.generate(n.Left)
 		g.generate(n.Right)
 	case Equal, NotEqual, Add, Subtract, Multiply, Divide, Mod, And, Or, Less, LessEqual, Greater, GreaterEqual:
-		op := n.Value.Type
+		op := tokenInstruction[n.Value.Type]
+		if n.Right == nil { // unary minus
+			op = "neg"
+		}
 		g.generate(n.Left)
 		g.generate(n.Right)
-		i := fmt.Sprintf("%5d %s", g.stck, tokenInstruction[op])
+		i := fmt.Sprintf("%5d %s", g.stck, op)
 		g.instructions = append(g.instructions, i)
 		g.stck += 1
 	case Prtc, Prti, Prts, Not, Negate:

@@ -20,6 +20,7 @@ func main() {
 	fmt.Println("Content:\n", rawData)
 
 	lexRes := lex(rawData)
+	fmt.Println(lexRes)
 	ast := createAst(lexRes)
 	// printTreePreOrder(ast)
 	fmt.Println(printTreeNested(ast))

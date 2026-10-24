@@ -102,7 +102,6 @@ func (a *Ast) checkEOF() {
 }
 
 func (a *Ast) currType() TokenType {
-	a.checkEOF()
 	return a.tokens[a.idx].Type
 }
 
@@ -140,7 +139,7 @@ func (a *Ast) isBinary(p int) bool {
 }
 
 var ExprOperands = []TokenType{Subtract, Add, Not}
-var AssignOperands = []TokenType{Identifier, Integer}
+var AssignOperands = []TokenType{Identifier, Integer, Character}
 
 func (a *Ast) expr(p int) *Node {
 	var x *Node
