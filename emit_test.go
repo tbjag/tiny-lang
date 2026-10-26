@@ -24,7 +24,7 @@ func TestEmit(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			emit := gen(createAst(lex(readFile(tt.name))))
+			_, emit := gen(createAst(lex(readFile(tt.name))))
 			want := readFile(tt.want)
 			if strings.TrimSpace(emit) != strings.TrimSpace(want) {
 				t.Errorf("Emitted code does not match result:\n for file %s", tt.want)

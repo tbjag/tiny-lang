@@ -20,10 +20,13 @@ func main() {
 	fmt.Println("Content:\n", rawData)
 
 	lexRes := lex(rawData)
-	fmt.Println(lexRes)
+	// fmt.Println(lexRes)
 	ast := createAst(lexRes)
 	// printTreePreOrder(ast)
-	fmt.Println(printTreeNested(ast))
-	fmt.Println("-----------------")
-	fmt.Print(gen(ast))
+	// fmt.Println(printTreeNested(ast))
+	// fmt.Println("-----------------")
+	g, instructions := gen(ast)
+	fmt.Println(instructions)
+	vm := Vm{instructions: g.instructions}
+	vm.parseInstructions()
 }

@@ -43,7 +43,7 @@ type Hole struct {
 	address  int
 }
 
-func gen(n *Node) string {
+func gen(n *Node) (*Generator, string) {
 	g := Generator{
 		stck:         0,
 		variables:    make(map[string]int),
@@ -61,7 +61,7 @@ func gen(n *Node) string {
 		sb.WriteString(instruction + "\n")
 	}
 	fmt.Fprintf(&sb, "%5d halt\n", g.stck)
-	return sb.String()
+	return &g, sb.String()
 }
 
 func (g *Generator) patchTo(h Hole, target int) {
