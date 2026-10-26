@@ -25,8 +25,8 @@ func main() {
 	// printTreePreOrder(ast)
 	// fmt.Println(printTreeNested(ast))
 	// fmt.Println("-----------------")
-	g, instructions := gen(ast)
-	fmt.Println(instructions)
-	vm := Vm{instructions: g.instructions}
-	vm.parseInstructions()
+	g, _ := gen(ast)
+	// fmt.Println(instructions)
+	vm := createVm(g)
+	vm.run()
 }

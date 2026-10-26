@@ -61,6 +61,7 @@ func gen(n *Node) (*Generator, string) {
 		sb.WriteString(instruction + "\n")
 	}
 	fmt.Fprintf(&sb, "%5d halt\n", g.stck)
+	g.instructions = append(g.instructions, fmt.Sprintf("%5d halt", g.stck))
 	return &g, sb.String()
 }
 
